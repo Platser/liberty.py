@@ -2,7 +2,24 @@ import re
 import logging
 
 class liberty_array:
-    pass
+    def __init__(
+            self):
+        self.keyword=None
+        self.array=[]
+
+    def from_string(
+            self,
+            string):
+        #logging.debug(string)
+        m=re.match('^\s*([a-zA-Z0-9_]+)\s*\(\s*([a-zA-Z0-9_”".,]+)\s*\)\s*;\s*$',string.replace('\\',''))
+        if m:
+            logging.debug(m.group(2))
+            self.keyword=m.group(1)
+            self.array=m.group(2)
+            return(True)
+        else:
+            return(False)
+        
 
 
 
@@ -61,6 +78,16 @@ class liberty_element:
             return(True)
         else:
             return(False)
+            
+    def add_array(
+            self,
+            array_string):
+        new_array=liberty_array()
+        if new_array.from_string(array_string):
+            self.arrays.append(new_array)
+            return(True)
+        else:
+            return(False)
 
 
 
@@ -82,6 +109,7 @@ class liberty:
         with open(filename, 'r') as fh:
             self.raw=fh.read().replace('\n','').replace(' ', '')
             self.raw=re.sub('/\*.*\*/','',self.raw)
+            #self.raw=re.sub('\\','',self.raw)
             self.pos=0
             
 
@@ -98,10 +126,11 @@ class liberty:
         while pos <= end:
             buffer_end=pos
             if self.raw[pos] == ";":
-                current_element.add_attribute(self.raw[buffer_start:pos+1])
-
-                # is_array to be here
-                    
+                check=False
+                check = check or current_element.add_attribute(self.raw[buffer_start:pos+1])
+                check = check or current_element.add_array(self.raw[buffer_start:pos+1])
+                if not check:
+                    logging.warning("Unable to parse string: "+self.raw[buffer_start:pos+1])
                 buffer_start=pos+1
                 pos+=1
                 continue
@@ -138,14 +167,6 @@ class liberty:
         self.recursive_print(self.root)
         
     
-    # def is_attribute(
-    #         self,
-    #         string):
-    #     m = re.match('^\s*[a-zA-Z0-9_]+\s*:\s*[a-zA-Z0-9_”"]+\s*;\s*$',string);
-    #     if m:
-    #         return(True)
-    #     return(False)
-
     def out(self):
         print(self.raw)
     
