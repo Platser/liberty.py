@@ -4,28 +4,28 @@ library(load_dependent) {
         variable_1 : constrained_pin_transition;
         variable_2 : related_pin_transition;
         variable_3 : related_out_total_output_net_capacitance;
-        index_1 (”1, 5, 10”);
-        index_2 (”1, 5, 10”);
-        index_3 (”1, 5, 10”);
+        index_1 ("1, 5, 10");
+        index_2 ("1, 5, 10");
+        index_3 ("1, 5, 10");
     }
     cell(selector) {
         pin(d) {
             direction : input ;
             capacitance : 4 ;
             timing() {
-                related_pin : ”sel”;
+                related_pin : "sel";
                 related_output_pin : "so";
                 timing_type : non_seq_hold_rising;
                 /* comment */
                 rise_constraint(constraint) {
-                    values(”1.5, 2.5, 3.5”, ”1.6, 2.6, 3.6”, ”1.7, 2.7, 3.7”, \
-                    ”1.8, 2.8, 3.8”, ”1.9, 2.9, 3.9”, ”2.0, 3.0, 4.0”, \
-                    ”2.1, 3.1, 4.1”, ”2.2, 3.2, 4.2”, ”2.3, 3.3, 4.3”);
+                    values("1.5, 2.5, 3.5", "1.6, 2.6, 3.6", "1.7, 2.7, 3.7", \
+                    "1.8, 2.8, 3.8", "1.9, 2.9, 3.9", "2.0, 3.0, 4.0", \
+                    "2.1, 3.1, 4.1", "2.2, 3.2, 4.2", "2.3, 3.3, 4.3");
                 }
                 fall_constraint(constraint) {
-                    values(”1.5, 2.5, 3.5”, ”1.6, 2.6, 3.6”, ”1.7, 2.7, 3.7”, \
-                    ”1.8, 2.8, 3.8”, ”1.9, 2.9, 3.9”, ”2.0, 3.0, 4.0”, \
-                    ”2.1, 3.1, 4.1”, ”2.2, 3.2, 4.2”, ”2.3, 3.3, 4.3”);
+                    values("1.5, 2.5, 3.5", "1.6, 2.6, 3.6", "1.7, 2.7, 3.7", \
+                    "1.8, 2.8, 3.8", "1.9, 2.9, 3.9", "2.0, 3.0, 4.0", \
+                    "2.1, 3.1, 4.1", "2.2, 3.2, 4.2", "2.3, 3.3, 4.3");
                 }
             }
         }

@@ -5,6 +5,7 @@
 import logging
 import argparse
 import os
+import pprint
 
 import projlib.liberty
 
@@ -30,6 +31,8 @@ def main():
     #lb()
 
     lib.print_lib()
+    
+    pprint.pprint(lib)
     
 
 if __name__ == "__main__":

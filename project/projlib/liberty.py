@@ -1,5 +1,6 @@
 import re
 import logging
+import pprint
 
 class liberty_array:
     def __init__(
@@ -10,12 +11,41 @@ class liberty_array:
     def from_string(
             self,
             string):
-        #logging.debug(string)
-        m=re.match('^\s*([a-zA-Z0-9_]+)\s*\(\s*([a-zA-Z0-9_”".,]+)\s*\)\s*;\s*$',string.replace('\\',''))
+        logging.debug("String: "+string)
+        m=re.match('^\s*([a-zA-Z0-9_]+)\s*\(\s*([a-zA-Z0-9_".,]+)\s*\)\s*;\s*$',string.replace('\\',''))
         if m:
-            logging.debug(m.group(2))
+            #logging.debug(re.split('\",',m.group(2)))
             self.keyword=m.group(1)
-            self.array=m.group(2)
+            array_string=m.group(2)
+            logging.debug("    array_string: "+array_string)
+            pos=0
+            self.array=[]
+            quotas_start=None
+            i=0
+            while pos < len(array_string):
+                if i > 500:
+                    logging.error("Infinit loop stop")
+                    logging.error("i="+str(i)+", pos="+str(pos)+", len="+str(len(array_string)))
+                    exit(1)
+                i+=1
+                if array_string[pos] in [ '"' ]:
+                    if quotas_start is None:
+                        pos+=1
+                        quotas_start=pos
+                        logging.debug("    Quotas_start found at: "+str(quotas_start))
+                        continue
+                    else:
+                        logging.debug("    array_string: "+array_string)
+                        sub_array_candidate=array_string[quotas_start:pos]
+                        sub_array=sub_array_candidate.split(',')
+                        logging.debug(    "    Sub array candidate: "+str(sub_array)+" at pos="+str(pos)+", quotas_start="+str(quotas_start))
+                        self.array.append(sub_array)
+                        pos+=1
+                        quotas_start=None
+                        continue
+                pos+=1
+            #logging.debug("    Array '%s' was resognized: %s" % ( self.keyword, pprint.pprint(self.array) ) )
+            logging.debug("    Array '%s' was resognized: %s" % ( self.keyword, self.array ) )
             return(True)
         else:
             return(False)
@@ -69,7 +99,7 @@ class liberty_element:
     def add_attribute(
             self,
             attribute_string):
-        m = re.match('^\s*([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_”"]+)\s*;\s*$',attribute_string);
+        m = re.match('^\s*([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_"]+)\s*;\s*$',attribute_string);
         if m:
             name=m.group(1)
             value=m.group(2)
@@ -84,6 +114,7 @@ class liberty_element:
             array_string):
         new_array=liberty_array()
         if new_array.from_string(array_string):
+            logging.debug("Appending new array %s to the %s ( %s )" % ( new_array.array, self.keyword, self.name ) )
             self.arrays.append(new_array)
             return(True)
         else:
@@ -100,8 +131,7 @@ class liberty:
         if filename is not None:
             self.read_from_file(filename)
         self.root=None
-        pos=0
-        
+
     def read_from_file(
             self,
             filename):
@@ -122,7 +152,6 @@ class liberty:
             end=len(self.raw)-1
         pos=start
         buffer_start=start
-        buffer_end=start
         while pos <= end:
             buffer_end=pos
             if self.raw[pos] == ";":
