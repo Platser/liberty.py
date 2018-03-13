@@ -44,10 +44,14 @@ def main():
     lib = projlib.liberty.liberty(os.path.abspath(args.lib_file))
     lib.recursive_parse()
 
-    for cn in lib.list_cells():
-        print(cn)
+    i = 1
+    for cn in lib.get_cell_names():
+        print('%4d. %s' % (i,cn))
+        i+=1
 
-    lib.get_table("xor3v1x1","d","rise_constraint")
+    #lib.get_table("xor3v1x1","z","rise_constraint")
+    
+    #pprint.pprint(lib.root.get_children(keyword='cell'))
     
 
 if __name__ == "__main__":

@@ -67,6 +67,9 @@ class liberty_attribute:
             string):
         pass
     
+    def echo(self):
+        return('%s : %s ;' % ( self.name, self.value ) )
+    
 
 
 class liberty_element:
@@ -120,8 +123,31 @@ class liberty_element:
             return(True)
         else:
             return(False)
-
-
+            
+    def echo(
+            self):
+        return("%s ( %s )" % (self.keyword, self.name))
+        
+    def get_attribute(
+            self,
+            name):
+        attribute=None
+        for att in self.attributes:
+            if att.name == name:
+                attribute=att
+        return(attribute)
+        
+    def get_children(
+            self,
+            keyword=None,
+            name=None):
+        result=[]
+        for el in self.child_elements:
+            if keyword is None or el.keyword == keyword:
+                if name is None or el.name == name:
+                    result.append(el)
+        return(result)
+        
 
 class liberty:
 
@@ -212,46 +238,65 @@ class liberty:
     def out(self):
         print(self.raw)
 
-    def find_elements(
-            self,
-            keyword=None,
-            name=None,
-            parent_element=None):
-        if parent_element is None:
-            parent_element = self.root
-            self.find_results =  []
-        for el in parent_element.child_elements:
-            flag = True
-            if keyword is not None and el.keyword != keyword:
-                flag=False
-            elif name is not None and el.name != name:
-                flag=False
-            if flag:
-                self.find_results.append(el)
-            self.find_elements(keyword=keyword,name=name,parent_element=el)
-        return(self.find_results)
+    # def find_elements(
+    #         self,
+    #         keyword=None,
+    #         name=None,
+    #         parent_element=None,
+    #         recursion=False, ### True means that function called by recursion, should be used only during recursion call inside this function
+    #         ):
+    #     if recursion is False:
+    #         self.find_results =  []
+    #     if parent_element is None:
+    #         parent_element = self.root
+    #     for el in parent_element.child_elements:
+    #         flag = True
+    #         if keyword is not None and el.keyword != keyword:
+    #             flag=False
+    #         elif name is not None and el.name != name:
+    #             flag=False
+    #         if flag:
+    #             self.find_results.append(el)
+    #         self.find_elements(keyword=keyword,name=name,parent_element=el, recursion=True)
+    #     return(self.find_results)
     
-    def get_table(
+    # def get_table(
+    #         self,
+    #         cell_name,
+    #         pin_name,
+    #         table_name):
+    #     logger = logging.getLogger('main.liberty.get_table')
+    #     result=[]
+    #     cells = self.find_elements(keyword="cell", name=cell_name)
+    #     if len(cells) > 1:
+    #         logger.error("More than one cell with name \"%s\" was found in the library" % cell_name)
+    #         exit(1)
+    #     if len(cells) < 1:
+    #         logger.error("Cell with name \"%s\" was not found in the library" % cell_name)
+    #         exit(1)
+    #     pins = self.find_elements(keyword="pin", name=pin_name,parent_element=cells[0])
+    #     if len(pins) > 1:
+    #         logger.error("More than one cell/pin with name \"%s/%s\" was found in the library" % ( cell_name, pin_name ) )
+    #         exit(1)
+    #     if len(pins) < 1:
+    #         logger.error("Cell/pin with name \"%s/%s\" was not found in the library" % ( cell_name, pin_name ) )
+    #         exit(1)
+    #     for pin in pins:
+    #         print(pin.echo())
+    #         print(pin.get_attribute('direction').echo())
+            
+    def get_cell_pins(
             self,
             cell_name,
-            pin_name,
-            table_name):
-        logger = logging.getLogger('main.liberty.get_table')
-        result=[]
-        cells = self.find_elements(keyword="cell", name=cell_name)
-        if len(cells) > 1:
-            logger.error("More than one cell with name \"%s\" was found in the library" % cell_name)
-            exit(1)
-        if len(cells) < 1:
-            logger.error("Cell with name \"%s\" was not found in the library" % cell_name)
-            exit(1)
-        pprint.pprint(cells)
+            direction=None):
+        pass
         
-    def list_cells(
+        
+    def get_cell_names(
             self):
-        celllist=[]
-        cells = self.find_elements(keyword="cell")
+        cell_names=[]
+        cells = self.root.get_children(keyword="cell")
         for c in cells:
-            celllist.append(c.name)
-        return(celllist)
-    
+            cell_names.append(c.name)
+        return(cell_names)
+        
