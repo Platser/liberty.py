@@ -34,7 +34,7 @@ class liberty_array:
                         quotas_start=pos
                         logging.debug("    Quotas_start found at: "+str(quotas_start))
                         continue
-                    else:
+                    else: 
                         logging.debug("    array_string: "+array_string)
                         sub_array_candidate=array_string[quotas_start:pos]
                         sub_array=sub_array_candidate.split(',')
@@ -112,6 +112,7 @@ class liberty_element:
     def add_array(
             self,
             array_string):
+        
         new_array=liberty_array()
         if new_array.from_string(array_string):
             logging.debug("Appending new array %s to the %s ( %s )" % ( new_array.array, self.keyword, self.name ) )
@@ -135,25 +136,33 @@ class liberty:
     def read_from_file(
             self,
             filename):
-        logging.info("Reading "+ filename)
+        logger = logging.getLogger('main.liberty.read_from_file')
+        logger.info("Reading "+ filename)
+        logger1 = logging.getLogger()
+        logger1.info("Reading "+ filename)
         with open(filename, 'r') as fh:
             self.raw=fh.read().replace('\n','').replace(' ', '')
-            self.raw=re.sub('/\*.*\*/','',self.raw)
+            #self.raw=re.sub('/\*[ a-zA-Z0-9.,;%_;:-]*\*/','',self.raw)
+            self.raw=re.sub('/\*.+?(?=\*/)\*/','',self.raw)
             #self.raw=re.sub('\\','',self.raw)
             self.pos=0
-            
+        with open('dump.lib', 'w') as fh:
+            fh.write(self.raw)
 
     def recursive_parse(
             self,
             current_element=None,
             start=0,
             end=None):
+        logger = logging.getLogger('main.liberty.recursive_parse')
         if end is None:
             end=len(self.raw)-1
         pos=start
         buffer_start=start
+        #logger.debug('start = %s, end = %s' % (start, end))
         while pos <= end:
             buffer_end=pos
+            #logger.debug('pos = ' + str(pos) )
             if self.raw[pos] == ";":
                 check=False
                 check = check or current_element.add_attribute(self.raw[buffer_start:pos+1])
@@ -164,7 +173,10 @@ class liberty:
                 pos+=1
                 continue
             if self.raw[pos] == "{":
-                m=re.match('^\s*(\w+)\((\w*)\)',self.raw[buffer_start:pos+1])
+                m=re.match('^\s*(\w+)\(([a-zA-Z_.,0-9"]*)\)',self.raw[buffer_start:pos+1])
+                if not m:
+                    logger.error("Unable to parse: %s" % ( self.raw[buffer_start:pos+1] ) )
+                    exit(1)
                 keyword=m.group(1)
                 name=m.group(2)
                 if current_element is None:
@@ -180,6 +192,7 @@ class liberty:
             if self.raw[pos] == "}":
                 return(pos+1)
             pos+=1
+        
     
     def recursive_print(
             self,
@@ -198,4 +211,47 @@ class liberty:
     
     def out(self):
         print(self.raw)
+
+    def find_elements(
+            self,
+            keyword=None,
+            name=None,
+            parent_element=None):
+        if parent_element is None:
+            parent_element = self.root
+            self.find_results =  []
+        for el in parent_element.child_elements:
+            flag = True
+            if keyword is not None and el.keyword != keyword:
+                flag=False
+            elif name is not None and el.name != name:
+                flag=False
+            if flag:
+                self.find_results.append(el)
+            self.find_elements(keyword=keyword,name=name,parent_element=el)
+        return(self.find_results)
+    
+    def get_table(
+            self,
+            cell_name,
+            pin_name,
+            table_name):
+        logger = logging.getLogger('main.liberty.get_table')
+        result=[]
+        cells = self.find_elements(keyword="cell", name=cell_name)
+        if len(cells) > 1:
+            logger.error("More than one cell with name \"%s\" was found in the library" % cell_name)
+            exit(1)
+        if len(cells) < 1:
+            logger.error("Cell with name \"%s\" was not found in the library" % cell_name)
+            exit(1)
+        pprint.pprint(cells)
+        
+    def list_cells(
+            self):
+        celllist=[]
+        cells = self.find_elements(keyword="cell")
+        for c in cells:
+            celllist.append(c.name)
+        return(celllist)
     
