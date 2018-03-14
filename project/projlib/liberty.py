@@ -153,11 +153,12 @@ class liberty:
 
     def __init__(
             self,
-            filename=None):
+            filename):
         self.raw=None
+        self.root=None
         if filename is not None:
             self.read_from_file(filename)
-        self.root=None
+            self.recursive_parse()
 
     def read_from_file(
             self,
@@ -172,8 +173,8 @@ class liberty:
             self.raw=re.sub('/\*.+?(?=\*/)\*/','',self.raw)
             #self.raw=re.sub('\\','',self.raw)
             self.pos=0
-        with open('dump.lib', 'w') as fh:
-            fh.write(self.raw)
+        #with open('dump.lib', 'w') as fh:
+        #    fh.write(self.raw)
 
     def recursive_parse(
             self,
@@ -299,4 +300,16 @@ class liberty:
         for c in cells:
             cell_names.append(c.name)
         return(cell_names)
-        
+    
+    def is_cell_sequential(
+            self,
+            cell_name):
+        cell = self.root.get_children(keyword="cell",name=cell_name)
+        if len(cell) == 0:
+            return(None)
+        chk = cell[0].get_children(keyword="ff")
+        if chk is None or len(chk) == 0:
+            return(False)
+        else:
+            return(True)
+

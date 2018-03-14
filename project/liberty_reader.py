@@ -42,16 +42,24 @@ def main():
         exit(1)
     
     lib = projlib.liberty.liberty(os.path.abspath(args.lib_file))
-    lib.recursive_parse()
+    #lib.recursive_parse()
 
     i = 1
     for cn in lib.get_cell_names():
-        print('%4d. %s' % (i,cn))
+        chk = lib.is_cell_sequential(cn)
+        if chk is None:
+            type = "Not found"
+        elif chk is False:
+            type = "Combinational"
+        else:
+            type = "Sequential"
+        print('%4d. %-15s - %s' % (i,cn,type))
         i+=1
 
     #lib.get_table("xor3v1x1","z","rise_constraint")
     
     #pprint.pprint(lib.root.get_children(keyword='cell'))
+    cn = 'dfnt1v0x2'
     
 
 if __name__ == "__main__":
